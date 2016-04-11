@@ -7,49 +7,49 @@
 #include <cmath>
 
 bool mesh::init(std::istream &ifs) {
-	std::string s;
-	ifs >> s >> s >> s >> pointsCount;
-	points.resize(pointsCount);
-	for (int i = 0; i < pointsCount; ++i) {
-		ifs >> points[i].x >> points[i].y;
-	}
-	ifs >> s >> s >> trianglesCount;
-	triangles[0].resize(trianglesCount);
-	triangles[1].resize(trianglesCount);
-	triangles[2].resize(trianglesCount);
-	for (int i = 0; i < trianglesCount; ++i) {
-		ifs >> triangles[0][i] >> triangles[1][i] >> triangles[2][i];
-		--triangles[0][i];
-		--triangles[1][i];
-		--triangles[2][i];
-	}
-	ifs >> s >> s >> wallsCount;
-	walls.resize(wallsCount);
-	for (int i = 0; i < wallsCount; ++i) {
-		ifs >> walls[i].nr >> walls[i].vertices[0] >> walls[i].vertices[1] >> s;
-		--walls[i].vertices[0];
-		--walls[i].vertices[1];
-	}
-	return true;
+    std::string s;
+    ifs >> s >> s >> s >> pointsCount;
+    points.resize(pointsCount);
+    for (int i = 0; i < pointsCount; ++i) {
+        ifs >> points[i].x >> points[i].y;
+    }
+    ifs >> s >> s >> trianglesCount;
+    triangles.resize(trianglesCount);
+    for (int i = 0; i < trianglesCount; ++i) {
+        ifs >> triangles[i].vertices[0] >> triangles[i].vertices[1] >> triangles[i].vertices[2];
+        --triangles[i].vertices[0];
+        --triangles[i].vertices[1];
+        --triangles[i].vertices[2];
+        for (int j = 0; j < 3; ++j) {
+            triangles[i].lengths[j] = sqrt(pow(points[triangles[i].vertices[(j + 2) % 3]].x - points[triangles[i].vertices[(j + 1) % 3]].x, 2) + pow(points[triangles[i].vertices[(j + 2) % 3]].y - points[triangles[i].vertices[(j + 1) % 3]].y, 2));
+            double a1 = points[triangles[i].vertices[(j + 2) % 3]].x - points[triangles[i].vertices[(j + 1) % 3]].x;
+            double a2 = points[triangles[i].vertices[(j + 2) % 3]].y - points[triangles[i].vertices[(j + 1) % 3]].y;
+            double b1 = points[triangles[i].vertices[j]].x - points[triangles[i].vertices[(j + 1) % 3]].x;
+            double b2 = points[triangles[i].vertices[j]].y - points[triangles[i].vertices[(j + 1) % 3]].y;
+            triangles[i].norm[j].x = a2 * (a2 * b1 - a1 * b2);
+            triangles[i].norm[j].y = a1 * (a1 * b2 - a2 * b1);
+            triangles[i].norm[j].normalize();
+            triangles[i].norm[j] *= triangles[i].lengths[j];
+        }
+    }
+    ifs >> s >> s >> wallsCount;
+    walls.resize(wallsCount);
+    for (int i = 0; i < wallsCount; ++i) {
+        ifs >> walls[i].nr >> walls[i].vertices[0] >> walls[i].vertices[1] >> s;
+        --walls[i].vertices[0];
+        --walls[i].vertices[1];
+    }
+    return true;
 }
 
 int mesh::getPointsCount() {
-	return pointsCount;
+    return pointsCount;
 }
 
 int mesh::getTrianglesCount() {
-	return trianglesCount;
+    return trianglesCount;
 }
 
 int mesh::getWallsCount() {
-	return wallsCount;
-}
-
-double mesh::getTriangleArea(int triangleNr) {
-	double a = sqrt(pow(points[triangles[0][triangleNr]].x - points[triangles[1][triangleNr]].x, 2) + pow(points[triangles[0][triangleNr]].y - points[triangles[1][triangleNr]].y, 2));
-	double b = sqrt(pow(points[triangles[0][triangleNr]].x - points[triangles[2][triangleNr]].x, 2) + pow(points[triangles[0][triangleNr]].y - points[triangles[2][triangleNr]].y, 2));
-	double c = sqrt(pow(points[triangles[2][triangleNr]].x - points[triangles[1][triangleNr]].x, 2) + pow(points[triangles[2][triangleNr]].y - points[triangles[1][triangleNr]].y, 2));
-	double p = (a + b + c) / 2;
-	//std::cout << sqrt(p * (p - a) * (p - b) * (p - c)) << std::endl;
-	return sqrt(p * (p - a) * (p - b) * (p - c));
+    return wallsCount;
 }
