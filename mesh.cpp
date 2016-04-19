@@ -1,7 +1,4 @@
 #include "mesh.h"
-#include "point2D.h"
-#include <string>
-#include <vector>
 #include <fstream>
 #include <iostream>
 #include <cmath>
@@ -42,14 +39,22 @@ bool mesh::init(std::istream &ifs) {
     return true;
 }
 
-int mesh::getPointsCount() {
+size_t mesh::getPointsCount() const {
     return pointsCount;
 }
 
-int mesh::getTrianglesCount() {
+size_t mesh::getTrianglesCount() const {
     return trianglesCount;
 }
 
-int mesh::getWallsCount() {
+size_t mesh::getWallsCount() const {
     return wallsCount;
+}
+
+const triangle2D& mesh::triangle(size_t nr) const {
+    return triangles[nr];
+}
+
+const point2D& mesh::point(size_t nr) const {
+    return points[nr];
 }

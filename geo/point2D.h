@@ -1,4 +1,7 @@
-#pragma once
+#ifndef RDS_POINT2D_H
+#define RDS_POINT2D_H
+
+
 class point2D
 {
 public:
@@ -6,7 +9,7 @@ public:
 	point2D(double x, double y);
 	double x;
 	double y;
-	double value = 0;
+
 	/*point2D &operator+=(point2D p) {
 		this->x += p.x;
 		this->y += p.y;
@@ -17,3 +20,6 @@ public:
 		return point2D(this->x + p.x, this->y + p.y);
 	}*/
 };
+
+
+#endif //RDS_POINT2D_H
