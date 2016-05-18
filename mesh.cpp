@@ -51,10 +51,10 @@ size_t mesh::getWallsCount() const {
     return wallsCount;
 }
 
-const triangle2D& mesh::triangle(size_t nr) const {
+const triangle2D &mesh::triangle(size_t nr) const {
     return triangles[nr];
 }
 
-const point2D& mesh::point(size_t nr) const {
+const point2D &mesh::point(size_t nr) const {
     return points[nr];
 }

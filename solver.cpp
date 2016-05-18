@@ -6,35 +6,43 @@ solver::solver(mesh &mMesh, vector2D &advection) {
     values.resize(mMesh.getPointsCount());
 }
 
+void solver::solveTriangle(const triangle2D &triangle, methodRDS method) const {
+    double k[3], kp[3], km[3], beta[3], kpsum = 0, fi = 0;
+    for(size_t j = 0; j < 3; ++j) {
+        k[j] = dot(advection, triangle.norm[j]) / 2;
+        kp[j] = std::max(0., k[j]);
+        km[j] = std::min(0., k[j]);
+        kpsum += kp[j];
+        fi += k[j] * values[triangle.vertices[j]];
+    }
+    for(size_t j = 0; j < 3; ++j) {
+        if(method == methodRDS::N) {
+            double s = 0;
+            for(size_t m = 0; m < 3; ++m) {
+                s += km[m] * values[triangle.vertices[m]] / kpsum;
+            }
+            nu[mMesh.triangle(i).vertices[j]] += kp[j] * (values[mMesh.triangle(i).vertices[j]] + s);
+        }
+        else if(method == methodRDS::LDA) {
+            beta[j] = kp[j] / kpsum;
+            nu[mMesh.triangle(i).vertices[j]] += beta[j] * fi;
+        }
+    }
+}
+
 void solver::solve(double t, double dt, methodRDS method) {
     for (int it = 0; it < 500; ++it) {
         std::vector<double> nu(mMesh.getPointsCount()), si(mMesh.getPointsCount());
         for(size_t i = 0; i < mMesh.getTrianglesCount(); ++i) {
-            double k[3], kp[3], km[3], beta[3], kpsum = 0, fi = 0;
+            std::vector<double> coords(3), delta(3);
+
             for(size_t j = 0; j < 3; ++j) {
-                k[j] = dot(advection, mMesh.triangle(i).norm[j]) / 2;
-                kp[j] = std::max(0., k[j]);
-                km[j] = std::min(0., k[j]);
-                kpsum += kp[j];
-                fi += k[j] * values[mMesh.triangle(i).vertices[j]];
+                coords[j] =
                 si[mMesh.triangle(i).vertices[j]] += mMesh.triangle(i).getArea() / 3;
-            }
-            for(size_t j = 0; j < 3; ++j) {
-                if(method == methodRDS::N) {
-                    double s = 0;
-                    for(size_t m = 0; m < 3; ++m) {
-                        s += km[m] * values[mMesh.triangle(i).vertices[m]] / kpsum;
-                    }
-                    nu[mMesh.triangle(i).vertices[j]] += kp[j] * (values[mMesh.triangle(i).vertices[j]] + s);
-                }
-                else if(method == methodRDS::LDA) {
-                    beta[j] = kp[j] / kpsum;
-                    nu[mMesh.triangle(i).vertices[j]] += beta[j] * fi;
-                }
             }
         }
         for(size_t i = 0; i < mMesh.getPointsCount(); ++i) {
-            values[i] -= dt * nu[i] / si[i]; // (very) temporary fix
+            values[i] -= dt * nu[i] / si[i];
         }
     }
 }

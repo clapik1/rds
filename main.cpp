@@ -11,6 +11,7 @@ int main(int argc, char *argv[]) {
         std::cout << "error initializing mesh" << std::endl;
         return 0;
     }
+    ifs.close();
     vector2D advection(1,1);
     double dt = 0.001;
 
@@ -19,6 +20,7 @@ int main(int argc, char *argv[]) {
     mSolver.solve(1, dt, methodRDS::N);
     std::ofstream ofs("/home/clapik/workspace/temp/out.dat", std::ofstream::out);
     mSolver.toTecplot(ofs);
+    ofs.close();
 
     /*for(int i = 0; i < mMesh.trianglesCount; ++i) {
         for(int j = 0; j < 3; ++j) {
