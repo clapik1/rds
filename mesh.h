@@ -7,6 +7,7 @@
 #include "geo/point2D.h"
 #include "geo/vector2D.h"
 #include "geo/triangle2D.h"
+#include "geo/ghost2D.h"
 
 struct wall2D {
     int nr;

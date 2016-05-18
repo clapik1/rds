@@ -5,9 +5,11 @@
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/main.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/mesh.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/solver.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/solver.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/geo/ghost2D.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/geo/ghost2D.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/geo" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/solver.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/mesh.h" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />

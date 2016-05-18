@@ -2,12 +2,12 @@
 #define RDS_TRIANGLE2D_H
 
 
+#include <cstddef>
 #include "vector2D.h"
 
 class triangle2D {
 public:
-    int vertices[3];
-    vector2D norm[3];
+    size_t vertices[3];
     double lengths[3];
     double getArea() const;
 };

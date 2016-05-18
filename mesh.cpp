@@ -19,14 +19,6 @@ bool mesh::init(std::istream &ifs) {
         --triangles[i].vertices[2];
         for (int j = 0; j < 3; ++j) {
             triangles[i].lengths[j] = sqrt(pow(points[triangles[i].vertices[(j + 2) % 3]].x - points[triangles[i].vertices[(j + 1) % 3]].x, 2) + pow(points[triangles[i].vertices[(j + 2) % 3]].y - points[triangles[i].vertices[(j + 1) % 3]].y, 2));
-            double a1 = points[triangles[i].vertices[(j + 2) % 3]].x - points[triangles[i].vertices[(j + 1) % 3]].x;
-            double a2 = points[triangles[i].vertices[(j + 2) % 3]].y - points[triangles[i].vertices[(j + 1) % 3]].y;
-            double b1 = points[triangles[i].vertices[j]].x - points[triangles[i].vertices[(j + 1) % 3]].x;
-            double b2 = points[triangles[i].vertices[j]].y - points[triangles[i].vertices[(j + 1) % 3]].y;
-            triangles[i].norm[j].x = a2 * (a2 * b1 - a1 * b2);
-            triangles[i].norm[j].y = a1 * (a1 * b2 - a2 * b1);
-            triangles[i].norm[j].normalize();
-            triangles[i].norm[j] *= triangles[i].lengths[j];
         }
     }
     ifs >> s >> s >> wallsCount;
