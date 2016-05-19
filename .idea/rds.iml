@@ -6,8 +6,6 @@
       <sourceFolder url="file://$MODULE_DIR$/main.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/mesh.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/solver.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/geo/ghost2D.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/geo/ghost2D.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/geo" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/solver.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/mesh.h" isTestSource="false" />
@@ -16,15 +14,15 @@
     <orderEntry type="module-library">
       <library name="Header Search Paths">
         <CLASSES>
-          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed" />
-          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/4.8/include" />
           <root url="file:///usr/include" />
+          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.1.1/include" />
+          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.1.1/include-fixed" />
           <root url="file:///usr/local/include" />
         </CLASSES>
         <SOURCES>
-          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed" />
-          <root url="file:///usr/lib/gcc/x86_64-linux-gnu/4.8/include" />
           <root url="file:///usr/include" />
+          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.1.1/include" />
+          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.1.1/include-fixed" />
           <root url="file:///usr/local/include" />
         </SOURCES>
       </library>

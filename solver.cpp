@@ -33,7 +33,7 @@ void solver::solveTriangle(const std::vector<vector2D> &norm, const std::vector<
 }
 
 void solver::solve(double t, double dt, methodRDS method) {
-    for (int it = 0; it < 500; ++it) {
+    for (int it = 0; it < 200; ++it) {
         std::vector<double> nu(mMesh.getPointsCount()), si(mMesh.getPointsCount());
         for(size_t i = 0; i < mMesh.getTrianglesCount(); ++i) {
             std::vector<double> localValues(3), delta(3);

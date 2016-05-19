@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     solver mSolver(mMesh, advection);
     mSolver.values[159] = 1;
     mSolver.solve(1, dt, methodRDS::N);
-    std::ofstream ofs("/home/clapik/workspace/temp/out.dat", std::ofstream::out);
+    std::ofstream ofs("/home/clapik/workspace/temp/out2.dat", std::ofstream::out);
     mSolver.toTecplot(ofs);
     ofs.close();
 
