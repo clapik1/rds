@@ -3,6 +3,7 @@
 
 
 #include <ostream>
+#include <istream>
 #include "mesh.h"
 #include "geo/vector2D.h"
 
@@ -13,14 +14,15 @@ enum class methodRDS {
 
 class solver {
 public:
-    solver(mesh &mMesh, vector2D &advection);
-    void solveTriangle(const std::vector<vector2D> &norm, const std::vector<double> &localValues, methodRDS method, std::vector<double> &delta) const;
-    void solve(double t, double dt, methodRDS method);
+    solver(std::istream &meshStream, vector2D &advection);
+    void solve(double t, double dt, double ghostHeight, methodRDS method);
     void toTecplot(std::ostream &os) const;
     std::vector<double> values;
+    std::vector<double> borderValues;
 private:
     mesh mMesh;
     vector2D advection;
+    std::vector<double> solveTriangle(const std::vector<vector2D> &norm, const std::vector<double> &localValues, methodRDS method) const;
 };
 
 

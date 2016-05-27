@@ -1,6 +1,7 @@
 #include "vector2D.h"
 #include <cmath>
 
+vector2D::vector2D(vector2D &v) : x(v.x), y(v.y) {};
 vector2D::vector2D(double x, double y) : x(x), y(y) { }
 
 void vector2D::normalize() {

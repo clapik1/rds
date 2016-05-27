@@ -1,12 +1,11 @@
 #include "solver.h"
 
-solver::solver(mesh &mMesh, vector2D &advection) {
-    this->mMesh = mMesh;
-    this->advection = advection;
+solver::solver(std::istream &meshStream, vector2D &advection) : mMesh(meshStream), advection(advection) {
     values.resize(mMesh.getPointsCount());
 }
 
-void solver::solveTriangle(const std::vector<vector2D> &norm, const std::vector<double> &localValues, methodRDS method, std::vector<double> &delta) const {
+std::vector<double> solver::solveTriangle(const std::vector<vector2D> &norm, const std::vector<double> &localValues, methodRDS method) const {
+    std::vector<double> delta;
     double k[3], kp[3], km[3], beta[3], kpsum = 0, fi = 0;
     for(size_t i = 0; i < 3; ++i) {
         k[i] = dot(advection, norm[i]) / 2;
@@ -30,13 +29,14 @@ void solver::solveTriangle(const std::vector<vector2D> &norm, const std::vector<
             delta[i] = beta[i] * fi;
         }
     }
+    return delta;
 }
 
-void solver::solve(double t, double dt, methodRDS method) {
-    for (int it = 0; it < 200; ++it) {
+void solver::solve(double t, double dt, double ghostHeight, methodRDS method) {
+    for (auto it = 0; it < 200; ++it) {
         std::vector<double> nu(mMesh.getPointsCount()), si(mMesh.getPointsCount());
         for(size_t i = 0; i < mMesh.getTrianglesCount(); ++i) {
-            std::vector<double> localValues(3), delta(3);
+            std::vector<double> localValues(3), delta;
             std::vector<vector2D> norm(3);
 
             for(size_t j = 0; j < 3; ++j) {
@@ -53,11 +53,15 @@ void solver::solve(double t, double dt, methodRDS method) {
                 si[mMesh.triangle(i).vertices[j]] += mMesh.triangle(i).getArea() / 3;
             }
 
-            solveTriangle(norm, localValues, method, delta);
+            delta = solveTriangle(norm, localValues, method);
             for(size_t j = 0; j < 3; ++j) {
                 nu[mMesh.triangle(i).vertices[j]] += delta[j];
             }
         }
+        for(size_t i = 0; i < mMesh.getWallsCount(); ++i) {
+
+        }
+
         for(size_t i = 0; i < mMesh.getPointsCount(); ++i) {
             values[i] -= dt * nu[i] / si[i];
         }

@@ -58,6 +58,7 @@ fabric.properties
 .Trash-*
 
 ### own ###
+.idea/rds.iml
 
 # Build
 bin/

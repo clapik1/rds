@@ -16,7 +16,7 @@ struct wall2D {
 
 class mesh {
 public:
-    bool init(std::istream &ifs);
+    mesh(std::istream &ifs);
     size_t getPointsCount() const;
     size_t getTrianglesCount() const;
     size_t getWallsCount() const;
