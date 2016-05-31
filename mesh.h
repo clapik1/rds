@@ -17,21 +17,13 @@ struct wall2D {
 class mesh {
 public:
     mesh(std::istream &ifs);
-    size_t getPointsCount() const;
-    size_t getTrianglesCount() const;
-    size_t getWallsCount() const;
-    size_t getGhostsCount() const;
-    const triangle2D &triangle(size_t nr) const;
-    const point2D &point(size_t nr) const;
+    const std::vector<triangle2D>& getTriangles() const;
+    const std::vector<point2D>& getPoints() const;
+    const std::vector<wall2D>& getWallElems() const;
 private:
-    size_t pointsCount;
     std::vector<point2D> points;
-    size_t trianglesCount;
     std::vector<triangle2D> triangles;
-    size_t wallsCount;
-    std::vector<wall2D> walls;
-    size_t ghostsCount;
-    std::vector<ghost2D> ghosts;
+    std::vector<wall2D> wallElems;
 };
 
 

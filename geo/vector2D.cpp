@@ -1,8 +1,8 @@
 #include "vector2D.h"
 #include <cmath>
 
-vector2D::vector2D(vector2D &v) : x(v.x), y(v.y) {};
-vector2D::vector2D(double x, double y) : x(x), y(y) { }
+vector2D::vector2D(const vector2D &v) : x(v.x), y(v.y) {}
+vector2D::vector2D(double x, double y) : x(x), y(y) {}
 
 void vector2D::normalize() {
     double len = sqrt(x * x + y * y);
@@ -15,6 +15,6 @@ vector2D & vector2D::operator *=(double m) {
     y *= m;
 }
 
-double dot(const vector2D &a, const vector2D &b) {
+double dotProduct(const vector2D &a, const vector2D &b) {
     return a.x * b.x + a.y * b.y;
 }
