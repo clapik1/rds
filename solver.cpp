@@ -46,6 +46,8 @@ std::array<double, 3> solver::solveTriangle(std::array<point2D, 3>& coords, std:
 void solver::solve(double t, double dt, double ghostHeight, methodRDS method) {
     for (auto it = 0; it < 200; ++it) {
         std::vector<double> nu(mMesh.getPoints().size()), si(mMesh.getPoints().size());
+
+        #pragma omp parallel for
         for(size_t i = 0; i < mMesh.getTriangles().size(); ++i) {
             std::array<double, 3> localValues, delta;
             std::array<point2D, 3> coords;
@@ -53,11 +55,13 @@ void solver::solve(double t, double dt, double ghostHeight, methodRDS method) {
             for(size_t j = 0; j < 3; ++j) {
                 localValues[j] = values[mMesh.getTriangles()[i].vertices[j]];
                 coords[j] = point2D(mMesh.getPoints()[mMesh.getTriangles()[i].vertices[j]]);
+                #pragma omp atomic
                 si[mMesh.getTriangles()[i].vertices[j]] += mMesh.getTriangles()[i].getArea() / 3;
             }
 
             delta = solveTriangle(coords, localValues, method);
             for(size_t j = 0; j < 3; ++j) {
+                #pragma omp atomic
                 nu[mMesh.getTriangles()[i].vertices[j]] += delta[j];
             }
         }
