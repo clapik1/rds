@@ -10,7 +10,7 @@
 #include "geo/ghost2D.h"
 
 struct wall2D {
-    int nr;
+    int wallNr;
     int vertices[2];
 };
 

@@ -20,14 +20,14 @@ mesh::mesh(std::istream &ifs) {
         --triangles[i].vertices[1];
         --triangles[i].vertices[2];
         for (size_t j = 0; j < 3; ++j) {
-            triangles[i].lengths[j] = sqrt(pow(points[triangles[i].vertices[(j + 2) % 3]].x - points[triangles[i].vertices[(j + 1) % 3]].x, 2) + pow(points[triangles[i].vertices[(j + 2) % 3]].y - points[triangles[i].vertices[(j + 1) % 3]].y, 2));
+            triangles[i].lengths[j] = std::sqrt(std::pow(points[triangles[i].vertices[(j + 2) % 3]].x - points[triangles[i].vertices[(j + 1) % 3]].x, 2) + std::pow(points[triangles[i].vertices[(j + 2) % 3]].y - points[triangles[i].vertices[(j + 1) % 3]].y, 2));
         }
     }
     ifs >> s >> s >> wallElemsCount;
     wallElems.resize(wallElemsCount);
     for (size_t i = 0; i < wallElemsCount; ++i) {
-        ifs >> wallElems[i].nr >> wallElems[i].vertices[0] >> wallElems[i].vertices[1] >> s;
-        --wallElems[i].nr;
+        ifs >> wallElems[i].wallNr >> wallElems[i].vertices[0] >> wallElems[i].vertices[1] >> s;
+        --wallElems[i].wallNr;
         --wallElems[i].vertices[0];
         --wallElems[i].vertices[1];
     }
