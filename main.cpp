@@ -1,32 +1,28 @@
 #include <iostream>
 #include <fstream>
+#include <cmath>
 #include "mesh.h"
 #include "solver.h"
 
 int main(int argc, char *argv[]) {
     //std::ifstream ifs(argv[1], std::ifstream::in);
-    std::ifstream ifs("/home/clapik/workspace/meshes/grid_524.msh2", std::ifstream::in);
-    mesh mMesh;
-    if (!mMesh.init(ifs)) {
-        std::cout << "error initializing mesh" << std::endl;
-        return 0;
-    }
-    ifs.close();
+    std::ifstream ifs("/home/clapik/workspace/meshes/grid_8334.msh2", std::ifstream::in);
     vector2D advection(1,1);
-    double dt = 0.001;
+    solver mSolver(ifs, advection);
+    ifs.close();
 
-    solver mSolver(mMesh, advection);
+    auto dt = 0.001;
+    auto ghostHeight = 0.01;
     mSolver.values[159] = 1;
-    mSolver.solve(1, dt, methodRDS::N);
-    std::ofstream ofs("/home/clapik/workspace/temp/out2.dat", std::ofstream::out);
+
+    auto sinLambda = [](double x, double y) { return std::cos(2. * std::acos(-1.) * (x - y)); };
+    auto stepLambda = [](double x, double y) { return x > -0.5 ? 1. : 0.; };
+    //mSolver.statSolve(dt, sinLambda, ghostHeight, methodRDS::LDA);
+    mSolver.statSolve(dt, stepLambda, ghostHeight, methodRDS::LimitedN);
+
+    std::ofstream ofs("/home/clapik/workspace/temp/out_dev.dat", std::ofstream::out);
     mSolver.toTecplot(ofs);
     ofs.close();
 
-    /*for(int i = 0; i < mMesh.trianglesCount; ++i) {
-        for(int j = 0; j < 3; ++j) {
-            std::cout << mMesh.triangles[i].norm[j].x << ' ' << mMesh.triangles[i].norm[j].y << std::endl;
-        }
-        std::cout << std::endl;
-    }*/
     return 0;
 }

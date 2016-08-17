@@ -10,28 +10,20 @@
 #include "geo/ghost2D.h"
 
 struct wall2D {
-    int nr;
+    int wallNr;
     int vertices[2];
 };
 
 class mesh {
 public:
-    bool init(std::istream &ifs);
-    size_t getPointsCount() const;
-    size_t getTrianglesCount() const;
-    size_t getWallsCount() const;
-    size_t getGhostsCount() const;
-    const triangle2D &triangle(size_t nr) const;
-    const point2D &point(size_t nr) const;
+    mesh(std::istream &ifs);
+    const std::vector<triangle2D>& getTriangles() const;
+    const std::vector<point2D>& getPoints() const;
+    const std::vector<wall2D>& getWallElems() const;
 private:
-    size_t pointsCount;
     std::vector<point2D> points;
-    size_t trianglesCount;
     std::vector<triangle2D> triangles;
-    size_t wallsCount;
-    std::vector<wall2D> walls;
-    size_t ghostsCount;
-    std::vector<ghost2D> ghosts;
+    std::vector<wall2D> wallElems;
 };
 
 

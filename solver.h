@@ -3,24 +3,28 @@
 
 
 #include <ostream>
+#include <istream>
+#include <array>
 #include "mesh.h"
 #include "geo/vector2D.h"
 
 enum class methodRDS {
     N,
-    LDA
+    LDA,
+    Blended,
+    LimitedN
 };
 
 class solver {
 public:
-    solver(mesh &mMesh, vector2D &advection);
-    void solveTriangle(const std::vector<vector2D> &norm, const std::vector<double> &localValues, methodRDS method, std::vector<double> &delta) const;
-    void solve(double t, double dt, methodRDS method);
+    solver(std::istream &meshStream, vector2D &advection);
+    void statSolve(double dt, double (*wallElemValue)(double, double), double ghostHeight, methodRDS method);
     void toTecplot(std::ostream &os) const;
     std::vector<double> values;
 private:
     mesh mMesh;
     vector2D advection;
+    std::array<double, 3> solveTriangle(std::array<point2D, 3>& coords, std::array<double, 3>& localValues, methodRDS method) const;
 };
 
 
