@@ -19,6 +19,7 @@ class solver {
 public:
     solver(std::istream &meshStream, vector2D &advection);
     void statSolve(double dt, double (*wallElemValue)(double, double), double ghostHeight, methodRDS method);
+    void unstatSolve(double t, double dt, double (*wallElemValue)(double, double), double ghostHeight, methodRDS method);
     void toTecplot(std::ostream &os) const;
     std::vector<double> values;
 private:

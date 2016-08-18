@@ -26,10 +26,10 @@ mesh::mesh(std::istream &ifs) {
     ifs >> s >> s >> wallElemsCount;
     wallElems.resize(wallElemsCount);
     for (size_t i = 0; i < wallElemsCount; ++i) {
-        ifs >> wallElems[i].wallNr >> wallElems[i].vertices[0] >> wallElems[i].vertices[1] >> s;
+        ifs >> wallElems[i].wallNr >> wallElems[i].vertices[1] >> wallElems[i].vertices[0] >> s;
         --wallElems[i].wallNr;
-        --wallElems[i].vertices[0];
         --wallElems[i].vertices[1];
+        --wallElems[i].vertices[0];
     }
 }
 
