@@ -1,6 +1,7 @@
 #include <cmath>
 #include <iostream>
 #include "solver.h"
+#include "constants.h"
 
 const int ghost_dx[] = {-1, 0, 1, 0};
 const int ghost_dy[] = {0, 1, 0, -1};
@@ -9,7 +10,7 @@ solver::solver(std::istream &meshStream, vector2D &advection) : mMesh(meshStream
     values.resize(mMesh.getPoints().size());
 }
 
-std::array<double, 3> solver::solveTriangle(std::array<point2D, 3>& coords, std::array<double, 3>& localValues, methodRDS method) const {
+std::array<double, 3> solver::statSolveTriangle(std::array<point2D, 3> &coords, std::array<double, 3> &localValues, methodStat method) const {
     std::array<double, 3> delta;
 
     std::vector<vector2D> norm(3);
@@ -31,7 +32,7 @@ std::array<double, 3> solver::solveTriangle(std::array<point2D, 3>& coords, std:
         fi += k[i] * localValues[i];
     }
     if(fi != 0.) {
-        if (method == methodRDS::N) {
+        if (method == methodStat::N) {
             double s = 0;
             for (size_t i = 0; i < 3; ++i) {
                 s += km[i] * localValues[i] / kpsum;
@@ -40,12 +41,12 @@ std::array<double, 3> solver::solveTriangle(std::array<point2D, 3>& coords, std:
                 delta[i] = kp[i] * (localValues[i] + s);
             }
         }
-        else if (method == methodRDS::LDA) {
+        else if (method == methodStat::LDA) {
             for (size_t i = 0; i < 3; ++i) {
                 delta[i] = (kp[i] / kpsum) * fi;
             }
         }
-        else if (method == methodRDS::Blended) {
+        else if (method == methodStat::Blended) {
             double s = 0;
             for (size_t i = 0; i < 3; ++i) {
                 s += km[i] * localValues[i] / kpsum;
@@ -61,7 +62,7 @@ std::array<double, 3> solver::solveTriangle(std::array<point2D, 3>& coords, std:
                 delta[i] = (1 - theta) * ((kp[i] / kpsum) * fi) + theta * (kp[i] * (localValues[i] + s)); //fixme: fix this shit
             }
         }
-        else if (method == methodRDS::LimitedN) {
+        else if (method == methodStat::LimitedN) {
             double s = 0, beta[3];
             for (size_t i = 0; i < 3; ++i) {
                 s += km[i] * localValues[i] / kpsum;
@@ -86,7 +87,7 @@ std::array<double, 3> solver::solveTriangle(std::array<point2D, 3>& coords, std:
     return delta;
 }
 
-void solver::statSolve(double dt, double (*wallElemValue)(double, double), double ghostHeight, methodRDS method) {
+void solver::statSolve(double (*wallElemValue)(double, double), methodStat method) {
     double change;
     do {
         std::vector<double> nu(mMesh.getPoints().size()), si(mMesh.getPoints().size());
@@ -103,7 +104,7 @@ void solver::statSolve(double dt, double (*wallElemValue)(double, double), doubl
                 si[mMesh.getTriangles()[i].vertices[j]] += mMesh.getTriangles()[i].getArea() / 3;
             }
 
-            delta = solveTriangle(coords, localValues, method);
+            delta = statSolveTriangle(coords, localValues, method);
             for(size_t j = 0; j < 3; ++j) {
                 #pragma omp atomic
                 nu[mMesh.getTriangles()[i].vertices[j]] += delta[j];
@@ -125,7 +126,7 @@ void solver::statSolve(double dt, double (*wallElemValue)(double, double), doubl
                 coords[0].x += ghostHeight * ghost_dx[mMesh.getWallElems()[i].wallNr];
                 coords[0].y += ghostHeight * ghost_dy[mMesh.getWallElems()[i].wallNr];
 
-                delta = solveTriangle(coords, localValues, method);
+                delta = statSolveTriangle(coords, localValues, method);
 
                 #pragma omp atomic
                 nu[mMesh.getWallElems()[i].vertices[j]] += delta[j + 1];
@@ -143,7 +144,111 @@ void solver::statSolve(double dt, double (*wallElemValue)(double, double), doubl
     while(change > 1e-6);
 }
 
-void solver::unstatSolve(double t, double dt, double (*wallElemValue)(double, double), double ghostHeight, methodRDS method) {
+std::array<double, 3> solver::unstatSolveTriangle(std::array<point2D, 3>& coords, std::array<double, 3>& prevValues, std::array<double, 3>& localValues, methodUnstat method) const {
+    std::array<double, 3> delta;
+    triangle2D tr;
+    tr.updateArea(coords);
+
+    std::vector<vector2D> norm(3);
+    for(size_t i = 0; i < 3; ++i) {
+        double ax = coords[(i + 2) % 3].x;
+        double ay = coords[(i + 2) % 3].y;
+        double bx = coords[(i + 1) % 3].x;
+        double by = coords[(i + 1) % 3].y;
+        norm[i].x = by - ay;
+        norm[i].y = ax - bx;
+    }
+
+    double k[3], kt[3], kh[3], kp[3], km[3], kpsum = 0, fi = 0, theta = 0;
+    for(size_t i = 0; i < 3; ++i) {
+        k[i] = dotProduct(advection, norm[i]) / 2;
+        kt[i] = dt * k[i] / 2 + tr.getArea() / 3; // k tilde
+        kh[i] = dt * k[i] / 2 - tr.getArea() / 3; // k hat
+        kp[i] = std::max(0., k[i]); // k plus
+        km[i] = std::min(0., k[i]); // k minus
+
+        kpsum += kp[i];
+        fi += kt[i] * localValues[i] + kh[i] * prevValues[i];
+    }
+    if(fi != 0.) {
+        if (method == methodUnstat::LDA) {
+            for (size_t i = 0; i < 3; ++i) {
+                delta[i] = (kp[i] / kpsum) * fi;
+            }
+        }
+        else if (method == methodUnstat::LDA_ST) {
+
+        }
+    }
+    else {
+        for (size_t i = 0; i < 3; ++i) {
+            delta[i] = 0.;
+        }
+    }
+    return delta;
+}
+
+void solver::unstatSolve(double t, double (*wallElemValue)(double, double), methodUnstat method) {
+    for(size_t i = 0; i < values.size(); ++i) {
+        if(std::pow(mMesh.getPoints()[i].x - (-0.25), 2) + std::pow(mMesh.getPoints()[i].y - (-0.25), 2) < 0.01)
+            values[i] = 1.;
+    }
+
+    std::vector<double> prevValues(values.size());
+    for(size_t i = 0; i < values.size(); ++i) {
+        prevValues[i] = values[i];
+    }
+
+    for(auto p = 0.; p < t; p += dt) {
+        std::vector<double> nu(mMesh.getPoints().size()), si(mMesh.getPoints().size());
+
+        #pragma omp parallel for
+        for(size_t i = 0; i < mMesh.getTriangles().size(); ++i) {
+            std::array<double, 3> localPrevValues, localValues, delta;
+            std::array<point2D, 3> coords;
+
+            for(size_t j = 0; j < 3; ++j) {
+                coords[j] = mMesh.getPoints()[mMesh.getTriangles()[i].vertices[j]];
+                localPrevValues[j] = prevValues[mMesh.getTriangles()[i].vertices[j]];
+                localValues[j] = values[mMesh.getTriangles()[i].vertices[j]];
+                #pragma omp atomic
+                si[mMesh.getTriangles()[i].vertices[j]] += mMesh.getTriangles()[i].getArea() / 3;
+            }
+
+            delta = unstatSolveTriangle(coords, localPrevValues, localValues, method);
+            for(size_t j = 0; j < 3; ++j) {
+                #pragma omp atomic
+                nu[mMesh.getTriangles()[i].vertices[j]] += delta[j];
+            }
+        }
+        /*
+        #pragma omp parallel for
+        for(size_t i = 0; i < mMesh.getWallElems().size(); ++i) {
+            std::array<double, 3> localValues, delta;
+            std::array<point2D, 3> coords;
+
+            for(size_t j = 0; j < 2; ++j) {
+                coords[j + 1] = mMesh.getPoints()[mMesh.getWallElems()[i].vertices[j]];
+                localValues[j + 1] = values[mMesh.getWallElems()[i].vertices[j]];
+            }
+            for(size_t j = 0; j < 2; ++j) {
+                coords[0] = coords[j + 1];
+                localValues[0] = wallElemValue(coords[0].x, coords[0].y);
+                coords[0].x += ghostHeight * ghost_dx[mMesh.getWallElems()[i].wallNr];
+                coords[0].y += ghostHeight * ghost_dy[mMesh.getWallElems()[i].wallNr];
+
+                delta = statSolveTriangle(coords, localValues, method);
+
+                #pragma omp atomic
+                nu[mMesh.getWallElems()[i].vertices[j]] += delta[j + 1];
+            }
+        }*/
+
+        for(size_t i = 0; i < mMesh.getPoints().size(); ++i) {
+            prevValues[i] = values[i];
+            values[i] -= dt * nu[i] / si[i];
+        }
+    }
 }
 
 double solver::statCheck(double (*wallElemValue)(double, double)) {

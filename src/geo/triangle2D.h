@@ -3,13 +3,17 @@
 
 
 #include <cstddef>
+#include <array>
 #include "vector2D.h"
+#include "point2D.h"
 
 class triangle2D {
 public:
     size_t vertices[3];
-    double lengths[3];
+    void updateArea(std::array<point2D, 3>& coords);
     double getArea() const;
+private:
+    double area;
 };
 
 
