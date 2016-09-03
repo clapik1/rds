@@ -5,7 +5,7 @@ vector2D::vector2D(const vector2D &v) : x(v.x), y(v.y) {}
 vector2D::vector2D(double x, double y) : x(x), y(y) {}
 
 void vector2D::normalize() {
-    double len = sqrt(x * x + y * y);
+    double len = std::sqrt(x * x + y * y);
     x /= len;
     y /= len;
 }
