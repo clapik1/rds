@@ -121,11 +121,13 @@ void statSolver::statSolve(double (*wallElemValue)(double, double)) {
                 coords[j + 1] = mMesh.getPoints()[mMesh.getWallElems()[i].vertices[j]];
                 localValues[j + 1] = values[mMesh.getWallElems()[i].vertices[j]];
             }
+            vector2D side(coords[2].x - coords[1].x, coords[2].y - coords[1].y);
+            double len = side.length();
             for(size_t j = 0; j < 2; ++j) {
                 coords[0] = coords[j + 1];
                 localValues[0] = wallElemValue(coords[0].x, coords[0].y);
-                coords[0].x += ghostHeight * ghost_dx[mMesh.getWallElems()[i].wallNr];
-                coords[0].y += ghostHeight * ghost_dy[mMesh.getWallElems()[i].wallNr];
+                coords[0].x += ghostHeight * len * ghost_dx[mMesh.getWallElems()[i].wallNr];
+                coords[0].y += ghostHeight * len * ghost_dy[mMesh.getWallElems()[i].wallNr];
 
                 delta = statSolveTriangle(coords, localValues);
 
@@ -140,9 +142,9 @@ void statSolver::statSolve(double (*wallElemValue)(double, double)) {
             values[i] -= dt * nu[i] / si[i];
         }
         change /= mMesh.getPoints().size();
-        //std::cout << change << std::endl;
+        std::cout << change << std::endl;
     }
-    while(change > 1e-6);
+    while(change > 1e-10);
 }
 
 double statSolver::statCheck(double (*wallElemValue)(double, double)) {

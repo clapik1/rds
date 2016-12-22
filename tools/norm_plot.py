@@ -15,7 +15,7 @@ for file in os.listdir(MESH_FOLDER):
     if file.endswith(".msh2"):
         numb = os.path.splitext(file)[0].split('_')[-1]
         a = int(numb)
-        if a >= 100:
+        if a >= 500:
             b = float(str(subprocess.run([BINARY, os.path.join(MESH_FOLDER, file), os.path.join(OUTPUT_FOLDER, "plot" + numb + ".dat")], stdout=subprocess.PIPE).stdout).split("'")[1].split("\\")[0])
             d[a] = b
 

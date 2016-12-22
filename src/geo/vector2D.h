@@ -12,6 +12,7 @@ public:
     vector2D(double x, double y);
     void normalize();
     vector2D & operator *=(double m);
+    double length();
 };
 
 double dotProduct(const vector2D &a, const vector2D &b);

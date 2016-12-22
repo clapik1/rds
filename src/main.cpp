@@ -2,9 +2,8 @@
 #include <fstream>
 #include <cmath>
 #include "mesh.h"
-#include "unstatSolverExplicit.h"
-#include "statSolver.h"
 #include "constants.h"
+#include "unstatSolverExplicit.h"
 
 int main(int argc, char *argv[]) {
     if(argc != 3) {
@@ -19,11 +18,13 @@ int main(int argc, char *argv[]) {
 
     //mSolver.values[159] = 1;
 
-    auto sinLambda = [](double x, double y) { return (double)std::cos(2. * std::acos(-1.) * (x - y)); };
+    auto sinLambda = [](double x, double y) { return (std::sin(std::acos(-1.) * (x - y)) + 1) / 2; };
     //auto stepLambda = [](double x, double y) { return x > -0.5 ? 1. : 0.; };
 
-    mSolver.unstatSolve(0.5, sinLambda);
-    //mSolver.statSolve(stepLambda, methodRDS::LDA);
+    //mSolver.statSolve(sinLambda);
+    //mSolver.statSolve(stepLambda);
+    mSolver.unstatSolve(0.04, sinLambda);
+
 
     std::ofstream ofs(argv[2], std::ofstream::out);
     mSolver.toTecplot(ofs);
