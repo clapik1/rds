@@ -4,10 +4,10 @@
 
 #include <array>
 #include <vector>
-#include "geo/point2D.h"
-#include "geo/vector2D.h"
-#include "mesh.h"
-#include "functions.h"
+#include "../src/geo/point2D.h"
+#include "../src/geo/vector2D.h"
+#include "../src/mesh.h"
+#include "../src/functions.h"
 
 class unstatSolver {
 public:

@@ -3,7 +3,7 @@
 #include <cmath>
 #include "mesh.h"
 #include "constants.h"
-#include "unstatSolverExplicit.h"
+#include "unstatSolverImplicit.h"
 
 int main(int argc, char *argv[]) {
     if(argc != 3) {
@@ -12,8 +12,8 @@ int main(int argc, char *argv[]) {
     }
 
     std::ifstream ifs(argv[1], std::ifstream::in);
-    vector2D advection(1, 1);
-    unstatSolverExplicit mSolver(ifs, advection, methodUnstat::LDA_ST);
+    vector2D advection(0.5, 0.5);
+    unstatSolverImplicit mSolver(ifs, advection, methodUnstat::LDA_ST);
     ifs.close();
 
     //mSolver.values[159] = 1;
@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
 
     //mSolver.statSolve(sinLambda);
     //mSolver.statSolve(stepLambda);
-    mSolver.unstatSolve(0.04, sinLambda);
+    mSolver.unstatSolve(1., [](double x, double y) { return 0.; });
 
 
     std::ofstream ofs(argv[2], std::ofstream::out);

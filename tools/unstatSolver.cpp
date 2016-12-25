@@ -2,7 +2,7 @@
 #include <set>
 #include <iostream>
 #include <cmath>
-#include "constants.h"
+#include "../src/constants.h"
 
 unstatSolver::unstatSolver(std::istream &meshStream, vector2D &advection, methodUnstat method) : mMesh(meshStream), advection(advection), method(method) {
     values.resize(mMesh.getPoints().size());

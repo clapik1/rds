@@ -4,9 +4,6 @@
 #include "constants.h"
 #include "functions.h"
 
-const int ghost_dx[] = {-1, 0, 1, 0};
-const int ghost_dy[] = {0, 1, 0, -1};
-
 statSolver::statSolver(std::istream &meshStream, vector2D &advection, methodStat method) : mMesh(meshStream), advection(advection), method(method) {
     values.resize(mMesh.getPoints().size());
 }
@@ -89,7 +86,7 @@ std::array<double, 3> statSolver::statSolveTriangle(std::array<point2D, 3> &coor
 }
 
 void statSolver::statSolve(double (*wallElemValue)(double, double)) {
-    double change;
+    double change, dt = 0.001; // fixme: not tested!
     do {
         std::vector<double> nu(mMesh.getPoints().size()), si(mMesh.getPoints().size());
 

@@ -21,8 +21,8 @@ enum class methodUnstat {
 };
 
 std::array<double, 3> calcK(std::array<point2D, 3>& coords, vector2D advection);
-std::array<double, 3> calcKTilde(double area, std::array<double, 3>& k);
-std::array<double, 3> calcUnstatBeta(double area, std::array<double, 3>& k, methodUnstat method);
+std::array<double, 3> calcKTilde(double dt, double area, std::array<double, 3>& k);
+std::array<double, 3> calcUnstatBeta(double dt, double area, std::array<double, 3>& k, methodUnstat method);
 
 
 #endif //RDS_FUNCTIONS_H

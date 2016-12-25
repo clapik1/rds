@@ -1,7 +1,7 @@
 #include <array>
 #include <vector>
 #include "functions.h"
-#include "unstatSolver.h"
+#include "../tools/unstatSolver.h"
 #include "constants.h"
 
 std::array<double, 3> calcK(std::array<point2D, 3>& coords, vector2D advection) {
@@ -24,7 +24,7 @@ std::array<double, 3> calcK(std::array<point2D, 3>& coords, vector2D advection) 
     return k;
 };
 
-std::array<double, 3> calcKTilde(double area, std::array<double, 3>& k) {
+std::array<double, 3> calcKTilde(double dt, double area, std::array<double, 3>& k) {
     std::array<double, 3> kt;
 
     for(size_t i = 0; i < 3; ++i) {
@@ -34,11 +34,11 @@ std::array<double, 3> calcKTilde(double area, std::array<double, 3>& k) {
     return kt;
 };
 
-std::array<double, 3> calcUnstatBeta(double area, std::array<double, 3>& k, methodUnstat method) {
+std::array<double, 3> calcUnstatBeta(double dt, double area, std::array<double, 3>& k, methodUnstat method) {
     std::array<double, 3> beta, kt;
     double ktp[3], kp[3], Nt = 0, N = 0;
 
-    kt = calcKTilde(area, k);
+    kt = calcKTilde(dt, area, k);
     for(size_t i = 0; i < 3; ++i) {
         ktp[i] = std::max(0., kt[i]); // k tilde plus
         Nt += ktp[i];
