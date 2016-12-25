@@ -9,6 +9,7 @@ mesh::mesh(std::istream &ifs) {
 
     ifs >> s >> s >> s >> pointsCount;
     points.resize(pointsCount);
+    values.resize(pointsCount);
     for (size_t i = 0; i < pointsCount; ++i) {
         ifs >> points[i].x >> points[i].y;
     }
@@ -43,4 +44,28 @@ const std::vector<point2D>& mesh::getPoints() const {
 
 const std::vector<wall2D>& mesh::getWallElems() const {
     return wallElems;
+}
+
+const std::vector<double>& mesh::getValues() const {
+    return values;
+}
+
+void mesh::setValue(size_t i, double value) {
+    values[i] = value;
+}
+
+void mesh::addToValue(size_t i, double value) {
+    values[i] += value;
+}
+
+void mesh::toTecplot(std::ostream &os) const {
+    os << "TITLE = \"\"\nVARIABLES = \"X\", \"Y\", \"VALUE\"\nZONE T=\"\", N=" << getPoints().size() << ", E=" << getTriangles().size() << ", F=FEPOINT, ET=QUADRILATERAL\n";
+    for(size_t i = 0; i < getPoints().size(); ++i) {
+        os << getPoints()[i].x << ' ' << getPoints()[i].y << ' ' << values[i] << '\n';
+    }
+    for(size_t i = 0; i < getTriangles().size(); ++i) {
+        os << getTriangles()[i].vertices[0] + 1 << ' ' << getTriangles()[i].vertices[1] + 1 << ' ' <<
+           getTriangles()[i].vertices[2] + 1 << ' ' <<
+           getTriangles()[i].vertices[2] + 1 << '\n';
+    }
 }

@@ -20,10 +20,15 @@ public:
     const std::vector<triangle2D>& getTriangles() const;
     const std::vector<point2D>& getPoints() const;
     const std::vector<wall2D>& getWallElems() const;
+    const std::vector<double>& getValues() const;
+    void setValue(size_t i, double value);
+    void addToValue(size_t i, double value);
+    void toTecplot(std::ostream &os) const;
 private:
     std::vector<point2D> points;
     std::vector<triangle2D> triangles;
     std::vector<wall2D> wallElems;
+    std::vector<double> values;
 };
 
 
