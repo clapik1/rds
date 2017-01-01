@@ -1,11 +1,12 @@
 #include <cmath>
 #include <iostream>
-#include "statSolver.h"
+#include <stdexcept>
+#include "steadySolver.h"
 #include "constants.h"
 
-statSolver::statSolver(mesh &mMesh, vector2D &advection, methodStat method) : mMesh(mMesh), advection(advection), method(method) {}
+statSolver::statSolver(mesh &mMesh, vector2D &advection, steadyMethods method) : mMesh(mMesh), advection(advection), method(method) {}
 
-std::array<double, 3> statSolver::statSolveTriangle(std::array<point2D, 3> &coords, std::array<double, 3> &localValues) const {
+std::array<double, 3> statSolver::solveTriangle(std::array<point2D, 3> &coords, std::array<double, 3> &localValues) const {
     std::array<double, 3> delta;
     std::array<double, 3> k = calcK(coords, advection);
     double N = calcN(k);
@@ -13,13 +14,13 @@ std::array<double, 3> statSolver::statSolveTriangle(std::array<point2D, 3> &coor
     double outflow = calcOutflow(N, k, localValues);
 
     switch(method) {
-        case methodStat::N:
+        case steadyMethods::N:
             delta = distributeN(k, localValues, inflow);
             break;
-        case methodStat::LDA:
+        case steadyMethods::LDA:
             delta = distributeLDA(k, inflow, outflow);
             break;
-        case methodStat::Blended: {
+        case steadyMethods::Blended: {
             std::array<double, 3> NDist = distributeN(k, localValues, inflow);
             std::array<double, 3> LDADist = distributeLDA(k, inflow, outflow);
             double fi = (outflow - inflow) / N;
@@ -36,32 +37,17 @@ std::array<double, 3> statSolver::statSolveTriangle(std::array<point2D, 3> &coor
             }
             break;
         }
-        case methodStat::LimitedN: {
+        case steadyMethods::LimitedN: {
             double fi = (outflow - inflow) / N;
-            if(fi != 0.) {
-                std::array<double, 3> NDist = distributeN(k, localValues, inflow);
-                double beta_plus[3];
-                double beta_sum = 0.;
-                for (size_t i = 0; i < 3; ++i) {
-                    beta_plus[i] = std::max(0., NDist[i] / fi) + 1e-10;
-                    beta_sum += beta_plus[i];
-                }
-                for (size_t i = 0; i < 3; ++i) {
-                    delta[i] = fi * beta_plus[i] / beta_sum;
-                }
-            }
-            else {
-                for (size_t i = 0; i < 3; ++i) {
-                    delta[i] = 0.;
-                }
-            }
+            std::array<double, 3> NDist = distributeN(k, localValues, inflow);
+            delta = applyMapping(fi, NDist);
             break;
         }
     }
     return delta;
 }
 
-void statSolver::statSolve(double (*wallElemValue)(double, double)) {
+void statSolver::solve(double (*wallElemValue)(double, double)) {
     double change, dt = 0.001; // fixme: not tested!
     do {
         std::vector<double> nu(mMesh.getPoints().size()), si(mMesh.getPoints().size());
@@ -74,14 +60,14 @@ void statSolver::statSolve(double (*wallElemValue)(double, double)) {
             for(size_t j = 0; j < 3; ++j) {
                 coords[j] = mMesh.getPoints()[mMesh.getTriangles()[i].vertices[j]];
                 localValues[j] = mMesh.getValues()[mMesh.getTriangles()[i].vertices[j]];
-                #pragma omp atomic
-                si[mMesh.getTriangles()[i].vertices[j]] += mMesh.getTriangles()[i].getArea() / 3;
             }
 
-            delta = statSolveTriangle(coords, localValues);
+            delta = solveTriangle(coords, localValues);
             for(size_t j = 0; j < 3; ++j) {
                 #pragma omp atomic
                 nu[mMesh.getTriangles()[i].vertices[j]] += delta[j];
+                #pragma omp atomic
+                si[mMesh.getTriangles()[i].vertices[j]] += mMesh.getTriangles()[i].getArea() / 3;
             }
         }
 
@@ -102,10 +88,15 @@ void statSolver::statSolve(double (*wallElemValue)(double, double)) {
                 coords[0].x += ghostHeight * len * ghost_dx[mMesh.getWallElems()[i].wallNr];
                 coords[0].y += ghostHeight * len * ghost_dy[mMesh.getWallElems()[i].wallNr];
 
-                delta = statSolveTriangle(coords, localValues);
+                delta = solveTriangle(coords, localValues);
+
+                triangle2D tr;
+                tr.updateArea(coords);
 
                 #pragma omp atomic
                 nu[mMesh.getWallElems()[i].vertices[j]] += delta[j + 1];
+                #pragma omp atomic
+                si[mMesh.getWallElems()[i].vertices[j]] += tr.getArea() / 3;
             }
         }
 
@@ -120,7 +111,7 @@ void statSolver::statSolve(double (*wallElemValue)(double, double)) {
     while(change > 1e-10);
 }
 
-double statSolver::statCheck(double (*wallElemValue)(double, double)) {
+double statSolver::calcError(double (*wallElemValue)(double, double)) {
     double x, y, x1, y1, squares = 0.;
     if(advection.x >= 0. && advection.y >= 0.) {
         for (size_t i = 0; i < mMesh.getPoints().size(); ++i) {
@@ -138,5 +129,5 @@ double statSolver::statCheck(double (*wallElemValue)(double, double)) {
         }
         return std::sqrt(squares / mMesh.getPoints().size());
     }
-    return 5;
+    throw std::invalid_argument("negative advection");
 }

@@ -2,10 +2,10 @@
 #include <vector>
 #include <limits>
 #include "mesh.h"
-#include "unstatFunctions.h"
-#include "statFunctions.h"
+#include "timeDepFunctions.h"
+#include "steadyFunctions.h"
 
-double calcMaxDt(mesh mMesh, vector2D advection) {
+double calcMaxDt(mesh& mMesh, vector2D advection) {
     double dt = std::numeric_limits<double>::max();
     for (size_t i = 0; i < mMesh.getTriangles().size(); ++i) {
         std::array<point2D, 3> coords;

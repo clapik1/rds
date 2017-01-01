@@ -1,9 +1,5 @@
-//
-// Created by mic on 25.12.16.
-//
-
 #include <vector>
-#include "statFunctions.h"
+#include "steadyFunctions.h"
 
 std::array<double, 3> calcK(std::array<point2D, 3>& coords, vector2D advection) {
     std::array<double, 3> k;
@@ -65,4 +61,25 @@ std::array<double, 3> distributeLDA(std::array<double, 3> &k, double inflow, dou
         delta[i] = std::max(0., k[i]) * (outflow - inflow);
     }
     return delta;
+}
+
+std::array<double, 3> applyMapping(double fi, std::array<double, 3> &old_dist) {
+    std::array<double, 3> dist;
+    if(fi != 0.) {
+        double beta_plus[3];
+        double beta_sum = 0.;
+        for (size_t i = 0; i < 3; ++i) {
+            beta_plus[i] = std::max(0., old_dist[i] / fi) + 1e-10;
+            beta_sum += beta_plus[i];
+        }
+        for (size_t i = 0; i < 3; ++i) {
+            dist[i] = fi * beta_plus[i] / beta_sum;
+        }
+    }
+    else {
+        for (size_t i = 0; i < 3; ++i) {
+            dist[i] = 0.;
+        }
+    }
+    return dist;
 }

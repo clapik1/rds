@@ -61,5 +61,6 @@ fabric.properties
 .idea/rds.iml
 
 # Build
-bin/
+cmake-build-debug/
+cmake-build-release/
 

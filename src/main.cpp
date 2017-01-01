@@ -1,54 +1,67 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include "helpers/argsParser.h"
 #include "mesh.h"
-#include "unstatSolver/implicit/unstatSolverImplicit.h"
-#include "statSolver/statSolver.h"
+#include "timeDepSolver/explicit/timeDepSolverExplicit.h"
+#include "steadySolver/steadySolver.h"
+
+double bump(double x, double y) {
+    double r = std::sqrt(std::pow(x - (-0.25), 2.) + std::pow(y - (-0.25), 2.));
+    if(r < 0.2)
+        return std::pow(std::cos(2 * std::acos(-1.) * r * 1.25), 2.);
+    return 0.;
+}
 
 void setValues(mesh& mMesh) {
-    double r, ma = -1;
+    double mv = -1;
     for(size_t i = 0; i < mMesh.getValues().size(); ++i) {
-        r = std::sqrt(std::pow(mMesh.getPoints()[i].x - (-0.25), 2.) + std::pow(mMesh.getPoints()[i].y - (-0.25), 2.));
-        if(r < 0.1) {
-            mMesh.setValue(i, std::pow(std::cos(2 * std::acos(-1.) * r * 2.5), 2.) * 0.4);
-            ma = std::max(ma, mMesh.getValues()[i]);
-        }
+        mMesh.setValue(i, bump(mMesh.getPoints()[i].x, mMesh.getPoints()[i].y));
+        mv = std::max(mv, mMesh.getValues()[i]);
     }
 
-    std::cout << "max value: " << ma << '\n';
+    //std::cout << "max value: " << mv << '\n';
 }
 
 int main(int argc, char *argv[]) {
-    if(argc != 3) {
-        std::cout << "Bad usage" << std::endl;
+    argsParser args(argc, argv);
+    std::string inputPath = args.getOption("-i");
+    std::string outputPath = args.getOption("-o");
+    std::string methodArg = args.getOption("-m");
+
+    if(inputPath == "" || outputPath == "" || methodArg == "") {
+        std::cout << "Bad usage\n";
         return 1;
     }
 
-    std::ifstream ifs(argv[1], std::ifstream::in);
+    std::ifstream ifs(inputPath, std::ifstream::in);
     mesh mMesh(ifs);
     ifs.close();
 
     vector2D advection(0.5, 0.5);
+
+    //steadySolver mSolver(mMesh, advection, steadyMethods::LimitedN);
+
     setValues(mMesh);
     double dt = 0.9 * calcMaxDt(mMesh, advection);
-    std::cout << "dt = " << dt << '\n';
-    //statSolver mSolver(mMesh, advection, methodStat::LimitedN);
-    unstatSolverImplicit mSolver(mMesh, advection, methodUnstat::LDA, dt);
+    //std::cout << "dt = " << dt << '\n';
+    timeDepSolverExplicit mSolver(mMesh, advection, static_cast<timeDepMethods>(std::stoi(methodArg)), dt);
 
     //auto sinLambda = [](double x, double y) { return (std::sin(std::acos(-1.) * (x - y)) + 1) / 2; };
     //auto stepLambda = [](double x, double y) { return x > -0.5 ? 1. : 0.; };
+    auto zeroLambda = [](double x, double y) { return 0.; };
 
-    //mSolver.statSolve(sinLambda);
-    //mSolver.statSolve(stepLambda);
-    mSolver.unstatSolve(1., [](double x, double y) { return 0.; });
+    //mSolver.solve(sinLambda);
+    //mSolver.solve(stepLambda);
+    mSolver.solve(1., zeroLambda);
 
-
-    std::ofstream ofs(argv[2], std::ofstream::out);
+    std::ofstream ofs(outputPath, std::ofstream::out);
     mMesh.toTecplot(ofs);
     ofs.close();
 
-    //std::cout << mSolver.statCheck(sinLambda) << std::endl;
-    //std::cout << mSolver.statCheck(stepLambda) << std::endl;
+    //std::cout << mSolver.calcError(sinLambda) << '\n';
+    //std::cout << mSolver.calcError(stepLambda) << '\n';
+    std::cout << mSolver.calcError(1., bump, zeroLambda) << '\n';
 
     return 0;
 }
