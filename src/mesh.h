@@ -24,6 +24,8 @@ public:
     void setValue(size_t i, double value);
     void addToValue(size_t i, double value);
     void toTecplot(std::ostream &os) const;
+    void toTecplotAnimationHeaderAndFirstZone(std::ostream &os) const;
+    void toTecplotAnimationNextZone(std::ostream &os, double t) const;
 private:
     std::vector<point2D> points;
     std::vector<triangle2D> triangles;

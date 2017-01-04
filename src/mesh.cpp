@@ -59,13 +59,28 @@ void mesh::addToValue(size_t i, double value) {
 }
 
 void mesh::toTecplot(std::ostream &os) const {
-    os << "TITLE = \"\"\nVARIABLES = \"X\", \"Y\", \"VALUE\"\nZONE T=\"\", N=" << getPoints().size() << ", E=" << getTriangles().size() << ", F=FEPOINT, ET=QUADRILATERAL\n";
+    os << "TITLE = \"Advection Solution\"\nVARIABLES = \"X\", \"Y\", \"VALUE\"\nZONE N = " << getPoints().size() << ", E = " << getTriangles().size() << ", DATAPACKING = POINT, ZONETYPE = FETRIANGLE\n";
     for(size_t i = 0; i < getPoints().size(); ++i) {
         os << getPoints()[i].x << ' ' << getPoints()[i].y << ' ' << values[i] << '\n';
     }
     for(size_t i = 0; i < getTriangles().size(); ++i) {
-        os << getTriangles()[i].vertices[0] + 1 << ' ' << getTriangles()[i].vertices[1] + 1 << ' ' <<
-           getTriangles()[i].vertices[2] + 1 << ' ' <<
-           getTriangles()[i].vertices[2] + 1 << '\n';
+        os << getTriangles()[i].vertices[0] + 1 << ' ' << getTriangles()[i].vertices[1] + 1 << ' ' << getTriangles()[i].vertices[2] + 1 << '\n';
+    }
+}
+
+void mesh::toTecplotAnimationHeaderAndFirstZone(std::ostream &os) const {
+    os << "TITLE = \"Advection Solution\"\nVARIABLES = \"X\", \"Y\", \"VALUE\"\nZONE STRANDID = 1, SOLUTIONTIME = 0, N = " << getPoints().size() << ", E = " << getTriangles().size() << ", DATAPACKING = POINT, ZONETYPE = FETRIANGLE\n";
+    for(size_t i = 0; i < getPoints().size(); ++i) {
+        os << getPoints()[i].x << ' ' << getPoints()[i].y << ' ' << values[i] << '\n';
+    }
+    for(size_t i = 0; i < getTriangles().size(); ++i) {
+        os << getTriangles()[i].vertices[0] + 1 << ' ' << getTriangles()[i].vertices[1] + 1 << ' ' << getTriangles()[i].vertices[2] + 1 << '\n';
+    }
+}
+
+void mesh::toTecplotAnimationNextZone(std::ostream &os, double t) const {
+    os << "ZONE STRANDID = 1, SOLUTIONTIME = " << t << ", N = " << getPoints().size() << ", E = " << getTriangles().size() << ", DATAPACKING = POINT, ZONETYPE = FETRIANGLE, VARSHARELIST = ([1-2]=1), CONNECTIVITYSHAREZONE = 1\n";
+    for(size_t i = 0; i < getPoints().size(); ++i) {
+        os << values[i] << '\n';
     }
 }

@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     std::string outputPath = args.getOption("-o");
     std::string methodArg = args.getOption("-m");
 
-    if(inputPath == "" || outputPath == "" || methodArg == "") {
+    if(inputPath == "" || methodArg == "" || outputPath == "") {
         std::cout << "Bad usage\n";
         return 1;
     }
@@ -43,9 +43,11 @@ int main(int argc, char *argv[]) {
     //steadySolver mSolver(mMesh, advection, steadyMethods::LimitedN);
 
     setValues(mMesh);
-    double dt = 0.9 * calcMaxDt(mMesh, advection);
-    //std::cout << "dt = " << dt << '\n';
-    timeDepSolverExplicit mSolver(mMesh, advection, static_cast<timeDepMethods>(std::stoi(methodArg)), dt);
+    auto maxDt = 0.9 * calcMaxDt(mMesh, advection);
+    auto t = 1.;
+    auto iterTotal = static_cast<uint32_t>(std::ceil(t / maxDt));
+    std::cout << "maxDt = " << maxDt << "    dt = " << iterTotal << '\n';
+    timeDepSolverExplicit mSolver(mMesh, advection, static_cast<timeDepMethods>(std::stoi(methodArg)));
 
     //auto sinLambda = [](double x, double y) { return (std::sin(std::acos(-1.) * (x - y)) + 1) / 2; };
     //auto stepLambda = [](double x, double y) { return x > -0.5 ? 1. : 0.; };
@@ -53,15 +55,15 @@ int main(int argc, char *argv[]) {
 
     //mSolver.solve(sinLambda);
     //mSolver.solve(stepLambda);
-    mSolver.solve(1., zeroLambda);
 
     std::ofstream ofs(outputPath, std::ofstream::out);
-    mMesh.toTecplot(ofs);
+    //mMesh.toTecplot(ofs);
+    mSolver.animate(t, zeroLambda, iterTotal, ofs);
     ofs.close();
 
     //std::cout << mSolver.calcError(sinLambda) << '\n';
     //std::cout << mSolver.calcError(stepLambda) << '\n';
-    std::cout << mSolver.calcError(1., bump, zeroLambda) << '\n';
+    std::cout << mSolver.calcError(t, bump, zeroLambda) << '\n';
 
     return 0;
 }
