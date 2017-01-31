@@ -65,20 +65,21 @@ std::array<double, 3> distributeLDA(std::array<double, 3> &k, double inflow, dou
 
 std::array<double, 3> applyMapping(double fi, std::array<double, 3> &old_dist) {
     std::array<double, 3> dist;
-    if(fi != 0.) {
+    if(fi == 0.) {
+        for (size_t i = 0; i < 3; ++i) {
+            dist[i] = 0.;
+        }
+    }
+    else {
         double beta_plus[3];
         double beta_sum = 0.;
+        int sign = (fi > 0.)? 1 : -1;
         for (size_t i = 0; i < 3; ++i) {
-            beta_plus[i] = std::max(0., old_dist[i] / fi) + 1e-10;
+            beta_plus[i] = std::max(0., sign * old_dist[i]) + sign * 1e-10 * fi;
             beta_sum += beta_plus[i];
         }
         for (size_t i = 0; i < 3; ++i) {
             dist[i] = fi * beta_plus[i] / beta_sum;
-        }
-    }
-    else {
-        for (size_t i = 0; i < 3; ++i) {
-            dist[i] = 0.;
         }
     }
     return dist;

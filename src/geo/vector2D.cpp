@@ -14,7 +14,6 @@ void vector2D::normalize() {
 vector2D & vector2D::operator *=(double m) {
     x *= m;
     y *= m;
-    std::cout << "tu";
     return *this;
 }
 

@@ -29,20 +29,20 @@ std::array<double, 3> calcKTilde(double dt, double area, std::array<double, 3>& 
     std::array<double, 3> kt;
 
     for(size_t i = 0; i < 3; ++i) {
-        kt[i] = dt * k[i] / 2 + area / 3; // k tilde
+        kt[i] = dt * k[i] / 2 + area / 3;
     }
 
     return kt;
 };
 
 std::array<double, 3> calcKHat(double dt, double area, std::array<double, 3>& k) {
-    std::array<double, 3> kt;
+    std::array<double, 3> kh;
 
     for(size_t i = 0; i < 3; ++i) {
-        kt[i] = dt * k[i] / 2 - area / 3; // k tilde
+        kh[i] = dt * k[i] / 2 - area / 3;
     }
 
-    return kt;
+    return kh;
 };
 
 double calcNST(std::array<double, 3> &kTilde, std::array<double, 3> &kHat) {

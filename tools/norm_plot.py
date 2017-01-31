@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import os
 import subprocess
@@ -16,7 +16,7 @@ for method in range(6):
         if file.endswith(".msh2"):
             numb = os.path.splitext(file)[0].split('_')[-1]
             a = int(numb)
-            if a >= 500:
+            if a >= 1000:
                 print(numb)
                 b = float(str(subprocess.run([BINARY, "-i", os.path.join(MESH_FOLDER, file), "-o", os.path.join(OUTPUT_FOLDER, "plot" + numb + ".dat"), "-m", str(method)], stdout=subprocess.PIPE).stdout).split("'")[1].split("\\")[0])
                 d[a] = b

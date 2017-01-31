@@ -75,7 +75,7 @@ timeDepSolverExplicit::timeStep(std::vector<double> &prevValues, double (*wallEl
     double convergence = 1.;
     int iter_count = 0;
 
-    while(convergence > 1e-6) {
+    while(convergence > 1e-11) {
         std::vector<double> nu(mMesh.getPoints().size()), tem(mMesh.getPoints().size());
 
         #pragma omp parallel for
@@ -141,7 +141,7 @@ timeDepSolverExplicit::timeStep(std::vector<double> &prevValues, double (*wallEl
 
         convergence = 0;
         for (size_t i = 0; i < mMesh.getPoints().size(); ++i) {
-            convergence += std::abs(nu[i] / tem[i]);
+            convergence += std::abs(nu[i]);
             mMesh.addToValue(i, -0.9 * nu[i] / tem[i]);
         }
         convergence /= mMesh.getPoints().size();
@@ -151,13 +151,14 @@ timeDepSolverExplicit::timeStep(std::vector<double> &prevValues, double (*wallEl
     }
 
     prevValues = mMesh.getValues();
-    //std::cout << "t = " << std::fixed << std::setprecision(6) << "\titer_count = " << iter_count << std::endl;
+    //std::cout << "\titer_count = " << std::fixed << std::setprecision(6) << iter_count << '\n';
 }
 
 void timeDepSolverExplicit::solve(double t, double (*wallElemValue)(double, double), unsigned int iterTotal) {
     std::vector<double> prevValues(mMesh.getValues());
     auto dt = t / iterTotal;
     for(auto i = 0; i < iterTotal; ++i) {
+        //std::cout << "t = " << std::fixed << std::setprecision(6) << t * (i + 1) / iterTotal;
         timeStep(prevValues, wallElemValue, dt);
     }
 }
@@ -168,6 +169,7 @@ void timeDepSolverExplicit::animate(double t, double (*wallElemValue)(double, do
     mMesh.toTecplotAnimationHeaderAndFirstZone(solutionStream);
     auto dt = t / iterTotal;
     for(auto i = 0; i < iterTotal; ++i) {
+        //std::cout << "t = " << std::fixed << std::setprecision(6) << t * (i + 1) / iterTotal;
         timeStep(prevValues, wallElemValue, dt);
         mMesh.toTecplotAnimationNextZone(solutionStream, t * (i + 1) / iterTotal);
     }
@@ -181,9 +183,7 @@ double timeDepSolverExplicit::calcError(double t, double (*initialValue)(double,
         x1 = x - t * advection.x;
         y1 = y - t * advection.y;
         if(-0.5 <= x1 && x1 <= 0.5 && -0.5 <= y1 && y1 <= 0.5) {
-            squares += std::pow(std::abs(initialValue(x1, y1) - mMesh.getValues()[i]), 2);
-            //std::cout << initialValue(x1, y1) << "  " << mMesh.getValues()[i] << '\n';
-            //std::cout << x << ' ' << y << ' ' << x1 << ' ' << y1 << '\n';
+            squares += std::pow(initialValue(x1, y1) - mMesh.getValues()[i], 2);
         }
         else {
             if (x * advection.y > y * advection.x) {
@@ -193,7 +193,7 @@ double timeDepSolverExplicit::calcError(double t, double (*initialValue)(double,
                 x1 = -0.5;
                 y1 = y + (x1 - x) * advection.y / advection.x;
             }
-            squares += std::pow(std::abs(wallElemValue(x1, y1) - mMesh.getValues()[i]), 2);
+            squares += std::pow(wallElemValue(x1, y1) - mMesh.getValues()[i], 2);
         }
     }
     return std::sqrt(squares / mMesh.getPoints().size());
